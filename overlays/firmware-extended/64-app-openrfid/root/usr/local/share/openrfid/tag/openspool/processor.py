@@ -27,11 +27,11 @@ class OpenspoolTagProcessor(NdefTagProcessor):
         )
         return None
 
-
-
-    def __openspool_parse_payload(self, payload : bytes) -> GenericFilament | None:
+    def __openspool_parse_payload(self, payload: bytes) -> GenericFilament | None:
         if payload is None or not isinstance(payload, (bytes, bytearray)):
-            self.logger.error("OpenSpool payload parsing failed: Invalid payload parameter")
+            self.logger.error(
+                "OpenSpool payload parsing failed: Invalid payload parameter"
+            )
             return None
 
         try:
@@ -94,9 +94,7 @@ class OpenspoolTagProcessor(NdefTagProcessor):
                     vendor = filament.get("vendor", {})
                     brand = vendor.get("name", "Generic")
 
-                    main_type = str(
-                        filament.get("material", main_type)
-                    ).upper()
+                    main_type = str(filament.get("material", main_type)).upper()
 
                     subtype = filament.get("name", subtype)
 
@@ -105,9 +103,7 @@ class OpenspoolTagProcessor(NdefTagProcessor):
                     )
 
                     try:
-                        diameter_mm = float(
-                            filament.get("diameter", diameter_mm)
-                        )
+                        diameter_mm = float(filament.get("diameter", diameter_mm))
                     except (ValueError, TypeError):
                         pass
 
@@ -119,15 +115,10 @@ class OpenspoolTagProcessor(NdefTagProcessor):
                         pass
 
                 except Exception as e:
-                    self.logger.error(
-                        f"Spoolman loading data failed: {str(e)}"
-                    )
+                    self.logger.error(f"Spoolman loading data failed: {str(e)}")
                     return None
 
-            alpha = max(
-                0x00,
-                min(0xFF, int(data.get("alpha", "FF"), 16))
-            )
+            alpha = max(0x00, min(0xFF, int(data.get("alpha", "FF"), 16)))
             color_argb = (alpha << 24) | color_hex
 
             if max_temp < min_temp:
@@ -182,3 +173,12 @@ class OpenspoolTagProcessor(NdefTagProcessor):
                 str(e),
             )
             return None
+
+    def __parse_color_hex(self, value: str):
+        try:
+            hex_str = str(value)
+            if hex_str.startswith("#"):
+                hex_str = hex_str[1:]
+            return int(hex_str, 16)
+        except (ValueError, TypeError):
+            return 0xFFFFFF
